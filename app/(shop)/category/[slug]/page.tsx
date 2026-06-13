@@ -1,10 +1,30 @@
 import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
 import { filterProducts } from '@/lib/mock/catalog'
 import { categories } from '@/lib/mock/data'
 import { ProductGrid } from '@/components/catalog/ProductGrid'
 
 export function generateStaticParams() {
   return categories.map((c) => ({ slug: c.slug }))
+}
+
+interface Props {
+  params: Promise<{ slug: string }>
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params
+  const category = categories.find((c) => c.slug === slug)
+  if (!category) {
+    return {
+      title: 'Category Not Found',
+      description: 'The requested category could not be found at Shreepathy & Co.',
+    }
+  }
+  return {
+    title: category.name,
+    description: `Browse ${category.name} products available wholesale at Shreepathy & Co — bakery and food ingredient specialists.`,
+  }
 }
 
 export default async function CategoryPage({

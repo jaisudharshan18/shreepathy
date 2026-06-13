@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { getProduct, filterProducts } from '@/lib/mock/catalog'
-import { brands } from '@/lib/mock/data'
+import { brands, categories } from '@/lib/mock/data'
 import { Badge } from '@/components/ui/badge'
 import { ProductGrid } from '@/components/catalog/ProductGrid'
 import { ProductViewer3D } from '@/components/catalog/ProductViewer3D'
@@ -10,6 +11,25 @@ import { products } from '@/lib/mock/data'
 
 export function generateStaticParams() {
   return products.map((p) => ({ slug: p.slug }))
+}
+
+interface Props {
+  params: Promise<{ slug: string }>
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params
+  const product = getProduct(slug)
+  if (!product) {
+    return {
+      title: 'Product Not Found',
+      description: 'The requested product could not be found at Shreepathy & Co.',
+    }
+  }
+  return {
+    title: product.name,
+    description: product.description,
+  }
 }
 
 function StockBadge({ status }: { status: 'in_stock' | 'low' | 'out_of_stock' }) {
@@ -32,14 +52,28 @@ export default async function ProductDetailPage({
   if (!product) notFound()
 
   const brand = brands.find((b) => b.id === product.brandId)
+  const category = categories.find((c) => c.id === product.categoryId)
   const related = filterProducts({ categoryId: product.categoryId })
     .filter((p) => p.id !== product.id)
     .slice(0, 4)
 
   const waMessage = `Hi, I'd like to order ${product.name}.`
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    description: product.description,
+    brand: brand ? { '@type': 'Brand', name: brand.name } : undefined,
+    category: category?.name,
+  }
+
   return (
     <div className="container mx-auto px-4 py-10 space-y-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Product detail section */}
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
         {/* Left — media */}
