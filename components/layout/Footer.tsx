@@ -1,9 +1,10 @@
 import Link from 'next/link'
-import { categories } from '@/lib/mock/data'
+import { getCategories } from '@/lib/mock/catalog'
 import { whatsappLink } from '@/lib/utils'
 
 export function Footer() {
   const year = 2026
+  const categories = getCategories()
 
   return (
     <footer className="mt-16 border-t border-white/10 bg-brand-navy text-white">

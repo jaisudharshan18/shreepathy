@@ -1,9 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { getProducts, filterProducts } from '@/lib/mock/catalog'
+import { getProducts, filterProducts, getCategories, getBrands } from '@/lib/mock/catalog'
 import type { ProductFilter } from '@/lib/mock/catalog'
-import { categories, brands } from '@/lib/mock/data'
 import { SearchBar } from '@/components/catalog/SearchBar'
 import { FilterSidebar } from '@/components/catalog/FilterSidebar'
 import { ProductGrid } from '@/components/catalog/ProductGrid'
@@ -11,6 +10,8 @@ import { ProductGrid } from '@/components/catalog/ProductGrid'
 export default function ProductsPage() {
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<ProductFilter>({})
+  const categories = getCategories()
+  const brands = getBrands()
 
   const visible = filterProducts(filter).filter((p) =>
     p.name.toLowerCase().includes(search.toLowerCase())

@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
-import { brands } from '@/lib/mock/data'
+import { getBrandById } from '@/lib/mock/catalog'
 import { whatsappLink, formatINR } from '@/lib/utils'
 import type { Product } from '@/lib/types'
 
@@ -32,7 +32,7 @@ function StockBadge({ status }: { status: Product['stockStatus'] }) {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const brand = brands.find((b) => b.id === product.brandId)
+  const brand = getBrandById(product.brandId)
   const prices = product.variants.map((v) => v.price).filter((p): p is number => p !== undefined)
   const minPrice = prices.length > 0 ? Math.min(...prices) : null
 

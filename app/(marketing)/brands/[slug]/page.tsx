@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import { brands } from '@/lib/mock/data'
-import { filterProducts } from '@/lib/mock/catalog'
+import { getBrand, getBrands, filterProducts } from '@/lib/mock/catalog'
 import { ProductGrid } from '@/components/catalog/ProductGrid'
 
 interface Props {
@@ -10,7 +9,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const brand = brands.find((b) => b.slug === slug)
+  const brand = getBrand(slug)
   if (!brand) return { title: 'Brand Not Found | Shreepathy & Co' }
   return {
     title: `${brand.name} Products | Shreepathy & Co`,
@@ -19,12 +18,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export async function generateStaticParams() {
-  return brands.map((b) => ({ slug: b.slug }))
+  return getBrands().map((b) => ({ slug: b.slug }))
 }
 
 export default async function BrandDetailPage({ params }: Props) {
   const { slug } = await params
-  const brand = brands.find((b) => b.slug === slug)
+  const brand = getBrand(slug)
 
   if (!brand) {
     notFound()

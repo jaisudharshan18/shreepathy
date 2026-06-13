@@ -1,25 +1,26 @@
 import { customers } from '@/lib/mock/data'
 import { getOrders } from '@/lib/mock/account'
-import { tierForValue } from '@/lib/mock/loyalty'
 import { whatsappLink, formatINR } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import type { Tier } from '@/lib/types'
 
 export const metadata = { title: 'Rewards — Shreepathy & Co' }
 
-// Tier thresholds (cumulative spend)
-const TIER_THRESHOLDS = {
+// Tier thresholds (cumulative spend) — used for progress bar toward next tier
+const TIER_THRESHOLDS: Record<Tier, { min: number; next: number | null; nextLabel: string | null }> = {
   Silver: { min: 0, next: 50_000, nextLabel: 'Gold' },
   Gold: { min: 50_000, next: 200_000, nextLabel: 'Platinum' },
   Platinum: { min: 200_000, next: null, nextLabel: null },
-} as const
+}
 
 export default function RewardsPage() {
   const me = customers[0]
   const orders = getOrders(me.id)
 
   const cumulativeSpend = orders.reduce((sum, o) => sum + o.totalValue, 0)
-  const currentTier = tierForValue(cumulativeSpend)
+  // Use stored tier as the authoritative current tier for consistent display with the Profile page
+  const currentTier: Tier = me.tier
   const thresholds = TIER_THRESHOLDS[currentTier]
 
   // Progress toward next tier

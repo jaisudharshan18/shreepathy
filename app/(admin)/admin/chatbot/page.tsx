@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { faqs as seedFaqs } from '@/lib/mock/data'
+import { getFaqs } from '@/lib/mock/crm'
 import { DataTable, type Column } from '@/components/admin/DataTable'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -49,7 +49,7 @@ interface FaqForm {
 const emptyForm: FaqForm = { question: '', answer: '' }
 
 export default function ChatbotPage() {
-  const [faqs, setFaqs] = useState<FaqRow[]>(() => seedFaqs.map(f => ({ ...f }) as FaqRow))
+  const [faqs, setFaqs] = useState<FaqRow[]>(() => getFaqs().map(f => ({ ...f }) as FaqRow))
   const [addOpen, setAddOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
   const [form, setForm] = useState<FaqForm>(emptyForm)

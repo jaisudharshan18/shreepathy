@@ -1,16 +1,14 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { getProduct, filterProducts } from '@/lib/mock/catalog'
-import { brands, categories } from '@/lib/mock/data'
+import { getProduct, filterProducts, getBrandById, getCategoryById, getProducts } from '@/lib/mock/catalog'
 import { Badge } from '@/components/ui/badge'
 import { ProductGrid } from '@/components/catalog/ProductGrid'
 import { ProductViewer3D } from '@/components/catalog/ProductViewer3D'
 import { whatsappLink, formatINR } from '@/lib/utils'
-import { products } from '@/lib/mock/data'
 
 export function generateStaticParams() {
-  return products.map((p) => ({ slug: p.slug }))
+  return getProducts().map((p) => ({ slug: p.slug }))
 }
 
 interface Props {
@@ -51,8 +49,8 @@ export default async function ProductDetailPage({
   const product = getProduct(slug)
   if (!product) notFound()
 
-  const brand = brands.find((b) => b.id === product.brandId)
-  const category = categories.find((c) => c.id === product.categoryId)
+  const brand = getBrandById(product.brandId)
+  const category = getCategoryById(product.categoryId)
   const related = filterProducts({ categoryId: product.categoryId })
     .filter((p) => p.id !== product.id)
     .slice(0, 4)

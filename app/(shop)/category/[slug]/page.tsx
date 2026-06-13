@@ -1,11 +1,10 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import { filterProducts } from '@/lib/mock/catalog'
-import { categories } from '@/lib/mock/data'
+import { filterProducts, getCategory, getCategories } from '@/lib/mock/catalog'
 import { ProductGrid } from '@/components/catalog/ProductGrid'
 
 export function generateStaticParams() {
-  return categories.map((c) => ({ slug: c.slug }))
+  return getCategories().map((c) => ({ slug: c.slug }))
 }
 
 interface Props {
@@ -14,7 +13,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const category = categories.find((c) => c.slug === slug)
+  const category = getCategory(slug)
   if (!category) {
     return {
       title: 'Category Not Found',
@@ -33,7 +32,7 @@ export default async function CategoryPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const category = categories.find((c) => c.slug === slug)
+  const category = getCategory(slug)
   if (!category) notFound()
 
   const categoryProducts = filterProducts({ categoryId: category.id })

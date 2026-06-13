@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { brands } from '@/lib/mock/data'
+import { getBrands } from '@/lib/mock/catalog'
 
 export const metadata: Metadata = {
   title: 'Brands | Shreepathy & Co',
@@ -8,6 +8,8 @@ export const metadata: Metadata = {
 }
 
 export default function BrandsPage() {
+  const brands = getBrands()
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-16">
       <div className="mb-10 text-center">

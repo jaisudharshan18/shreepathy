@@ -1,6 +1,5 @@
 import Link from 'next/link'
-import { categories, brands } from '@/lib/mock/data'
-import { getProducts } from '@/lib/mock/catalog'
+import { getProducts, getBrands, getCategories } from '@/lib/mock/catalog'
 import { whatsappLink } from '@/lib/utils'
 import { ProductGrid } from '@/components/catalog/ProductGrid'
 
@@ -8,6 +7,8 @@ const HERO_WA_MESSAGE = "Hi Shreepathy & Co, I'd like to place a wholesale order
 
 export default function HomePage() {
   const featuredProducts = getProducts().filter((p) => p.isFeatured)
+  const categories = getCategories()
+  const brands = getBrands()
 
   return (
     <div className="flex flex-col">
