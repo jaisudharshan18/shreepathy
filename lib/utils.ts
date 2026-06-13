@@ -5,7 +5,10 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-const WHATSAPP_NUMBER = '919241210597467' // Phase 2: move to admin settings; derived from WhatsApp catalog id
+// PLACEHOLDER — client's real WhatsApp business number needed (format: 91 + 10-digit mobile = 12 digits).
+// '119241210597467' in the proposal is a WhatsApp *catalog* id, not a phone number.
+// Phase 2: move to admin settings.
+const WHATSAPP_NUMBER = '919999999999'
 export function whatsappLink(message: string): string {
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`
 }
