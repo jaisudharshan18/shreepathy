@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { tierForValue, pointsForOrder } from '@/lib/mock/loyalty'
+import { tierForValue, pointsForOrder } from '@/lib/loyalty'
 describe('loyalty', () => {
   it('Silver under 50k', () => expect(tierForValue(10000)).toBe('Silver'))
   it('Gold at 50k', () => expect(tierForValue(50000)).toBe('Gold'))
