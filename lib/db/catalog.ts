@@ -85,6 +85,48 @@ export async function getCategoryById(id: string) {
   return prisma.category.findUnique({ where: { id } })
 }
 
+// ── Category write repo ───────────────────────────────────────────────────────
+
+export interface CategoryWriteData {
+  name: string
+  slug: string
+  image?: string | null
+  sortOrder: number
+}
+
+export async function createCategory(data: CategoryWriteData) {
+  return prisma.category.create({ data })
+}
+
+export async function updateCategory(id: string, data: CategoryWriteData) {
+  return prisma.category.update({ where: { id }, data })
+}
+
+export async function deleteCategory(id: string) {
+  return prisma.category.delete({ where: { id } })
+}
+
+// ── Brand write repo ──────────────────────────────────────────────────────────
+
+export interface BrandWriteData {
+  name: string
+  slug: string
+  description?: string | null
+  logo?: string | null
+}
+
+export async function createBrand(data: BrandWriteData) {
+  return prisma.brand.create({ data })
+}
+
+export async function updateBrand(id: string, data: BrandWriteData) {
+  return prisma.brand.update({ where: { id }, data })
+}
+
+export async function deleteBrand(id: string) {
+  return prisma.brand.delete({ where: { id } })
+}
+
 // ── Product write repo ────────────────────────────────────────────────────────
 
 export interface ProductVariantInput {
