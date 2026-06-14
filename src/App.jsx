@@ -1,0 +1,34 @@
+import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import MarketingLayout from "./pages/MarketingLayout";
+import ShopLayout from "./pages/ShopLayout";
+import AccountLayout from "./pages/AccountLayout";
+import AdminLayout from "./pages/AdminLayout";
+import Home from './pages/Home';
+import About from './pages/About';
+import Contact from './pages/contact/page';
+import Products from './pages/products/page';
+import ProductDetails from './pages/products/details';
+import Brands from './pages/brands/page';
+import BrandDetails from './pages/brands/details';
+import CategoryDetails from './pages/category/details';
+import AccountProfile from './pages/account/page';
+import AccountOrders from './pages/account/orders/page';
+import AccountRewards from './pages/account/rewards/page';
+import AdminDashboard from './pages/admin/page';
+import AdminAnalytics from './pages/admin/analytics/page';
+import AdminBrands from './pages/admin/brands/page';
+import AdminCategories from './pages/admin/categories/page';
+import AdminChatbot from './pages/admin/chatbot/page';
+import AdminContent from './pages/admin/content/page';
+import AdminCustomers from './pages/admin/customers/page';
+import AdminEnquiries from './pages/admin/enquiries/page';
+import AdminLeads from './pages/admin/leads/page';
+import AdminLoyalty from './pages/admin/loyalty/page';
+import AdminOrders from './pages/admin/orders/page';
+import AdminProducts from './pages/admin/products/page';
+import AdminSettings from './pages/admin/settings/page';
+import { ChatWidget } from "@/components/chatbot/ChatWidget";
+export default function App() {
+  return /* @__PURE__ */ React.createElement(BrowserRouter, null, /* @__PURE__ */ React.createElement(Routes, null, /* @__PURE__ */ React.createElement(Route, { element: /* @__PURE__ */ React.createElement(MarketingLayout, null) }, /* @__PURE__ */ React.createElement(Route, { path: "/", element: /* @__PURE__ */ React.createElement(Home, null) }), /* @__PURE__ */ React.createElement(Route, { path: "/about", element: /* @__PURE__ */ React.createElement(About, null) }), /* @__PURE__ */ React.createElement(Route, { path: "/contact", element: /* @__PURE__ */ React.createElement(Contact, null) })), /* @__PURE__ */ React.createElement(Route, { element: /* @__PURE__ */ React.createElement(ShopLayout, null) }, /* @__PURE__ */ React.createElement(Route, { path: "/products", element: /* @__PURE__ */ React.createElement(Products, null) }), /* @__PURE__ */ React.createElement(Route, { path: "/products/:slug", element: /* @__PURE__ */ React.createElement(ProductDetails, null) }), /* @__PURE__ */ React.createElement(Route, { path: "/brands", element: /* @__PURE__ */ React.createElement(Brands, null) }), /* @__PURE__ */ React.createElement(Route, { path: "/brands/:slug", element: /* @__PURE__ */ React.createElement(BrandDetails, null) }), /* @__PURE__ */ React.createElement(Route, { path: "/category/:slug", element: /* @__PURE__ */ React.createElement(CategoryDetails, null) })), /* @__PURE__ */ React.createElement(Route, { element: /* @__PURE__ */ React.createElement(AccountLayout, null) }, /* @__PURE__ */ React.createElement(Route, { path: "/account", element: /* @__PURE__ */ React.createElement(AccountProfile, null) }), /* @__PURE__ */ React.createElement(Route, { path: "/account/orders", element: /* @__PURE__ */ React.createElement(AccountOrders, null) }), /* @__PURE__ */ React.createElement(Route, { path: "/account/rewards", element: /* @__PURE__ */ React.createElement(AccountRewards, null) })), /* @__PURE__ */ React.createElement(Route, { element: /* @__PURE__ */ React.createElement(AdminLayout, null) }, /* @__PURE__ */ React.createElement(Route, { path: "/admin", element: /* @__PURE__ */ React.createElement(AdminDashboard, null) }), /* @__PURE__ */ React.createElement(Route, { path: "/admin/analytics", element: /* @__PURE__ */ React.createElement(AdminAnalytics, null) }), /* @__PURE__ */ React.createElement(Route, { path: "/admin/brands", element: /* @__PURE__ */ React.createElement(AdminBrands, null) }), /* @__PURE__ */ React.createElement(Route, { path: "/admin/categories", element: /* @__PURE__ */ React.createElement(AdminCategories, null) }), /* @__PURE__ */ React.createElement(Route, { path: "/admin/chatbot", element: /* @__PURE__ */ React.createElement(AdminChatbot, null) }), /* @__PURE__ */ React.createElement(Route, { path: "/admin/content", element: /* @__PURE__ */ React.createElement(AdminContent, null) }), /* @__PURE__ */ React.createElement(Route, { path: "/admin/customers", element: /* @__PURE__ */ React.createElement(AdminCustomers, null) }), /* @__PURE__ */ React.createElement(Route, { path: "/admin/enquiries", element: /* @__PURE__ */ React.createElement(AdminEnquiries, null) }), /* @__PURE__ */ React.createElement(Route, { path: "/admin/leads", element: /* @__PURE__ */ React.createElement(AdminLeads, null) }), /* @__PURE__ */ React.createElement(Route, { path: "/admin/loyalty", element: /* @__PURE__ */ React.createElement(AdminLoyalty, null) }), /* @__PURE__ */ React.createElement(Route, { path: "/admin/orders", element: /* @__PURE__ */ React.createElement(AdminOrders, null) }), /* @__PURE__ */ React.createElement(Route, { path: "/admin/products", element: /* @__PURE__ */ React.createElement(AdminProducts, null) }), /* @__PURE__ */ React.createElement(Route, { path: "/admin/settings", element: /* @__PURE__ */ React.createElement(AdminSettings, null) }))), /* @__PURE__ */ React.createElement(ChatWidget, null));
+}
