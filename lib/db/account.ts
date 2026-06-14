@@ -1,6 +1,10 @@
 import { prisma } from '@/lib/db/client'
 import { tierForValue, pointsForOrder } from '@/lib/loyalty'
+import { isBirthdayToday, generateBirthdayCode } from '@/lib/birthday'
+import { sendEmail } from '@/lib/email'
 import type { Tier } from '@/lib/generated/prisma/client'
+
+export const REFERRAL_POINTS = 500
 
 export async function getProfile(id: string) {
   return prisma.customerProfile.findUnique({ where: { id } })
@@ -48,6 +52,75 @@ export async function createProfile(input: {
       referralCode,
     },
   })
+}
+
+// ── Referral credit ──────────────────────────────────────────────────────────
+
+export async function creditReferral(referrerCode: string, referredId: string) {
+  const referrer = await prisma.customerProfile.findUnique({
+    where: { referralCode: referrerCode },
+  })
+  if (!referrer || referrer.id === referredId) return null
+
+  return prisma.$transaction(async (tx) => {
+    const referral = await tx.referral.create({
+      data: {
+        referrerId: referrer.id,
+        referredId,
+        code: referrerCode,
+        status: 'credited',
+        pointsAwarded: REFERRAL_POINTS,
+      },
+    })
+    await tx.loyaltyEntry.create({
+      data: {
+        customerId: referrer.id,
+        pointsDelta: REFERRAL_POINTS,
+        reason: `Referral: ${referredId}`,
+      },
+    })
+    await tx.customerProfile.update({
+      where: { id: referrer.id },
+      data: { pointsBalance: { increment: REFERRAL_POINTS } },
+    })
+    return referral
+  })
+}
+
+// ── Birthday offers ───────────────────────────────────────────────────────────
+
+export async function runBirthdayOffers(today: Date) {
+  const customers = await prisma.customerProfile.findMany({
+    where: { birthday: { not: null } },
+  })
+
+  const results: { customerId: string; businessName: string; code: string }[] = []
+
+  for (const customer of customers) {
+    if (!isBirthdayToday(customer.birthday, today)) continue
+
+    const code = generateBirthdayCode(customer, today)
+
+    await prisma.loyaltyEntry.create({
+      data: {
+        customerId: customer.id,
+        pointsDelta: 0,
+        reason: `Birthday offer ${code}`,
+      },
+    })
+
+    if (customer.email) {
+      await sendEmail({
+        to: customer.email,
+        subject: 'Your birthday gift from Shreepathy & Co',
+        html: `<p>Happy Birthday, ${customer.contactName}!</p><p>Use code <strong>${code}</strong> for your special birthday discount. Valid this month only.</p>`,
+      })
+    }
+
+    results.push({ customerId: customer.id, businessName: customer.businessName, code })
+  }
+
+  return results
 }
 
 // ── Customer write repo ───────────────────────────────────────────────────────

@@ -103,6 +103,18 @@ export function RegisterForm() {
         />
       </div>
 
+      {/* Referral code (optional) */}
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="referralCode">Referral code (optional)</Label>
+        <Input
+          id="referralCode"
+          name="referralCode"
+          type="text"
+          autoComplete="off"
+          placeholder="e.g. SHRP-ABC123"
+        />
+      </div>
+
       <SubmitButton />
 
       <p className="text-center text-sm text-muted-foreground">

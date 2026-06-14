@@ -2,7 +2,7 @@
 
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { createProfile } from '@/lib/db/account'
+import { createProfile, creditReferral } from '@/lib/db/account'
 
 export type AuthState = { error?: string; message?: string }
 
@@ -47,13 +47,26 @@ export async function signUpAction(
   if (error) return { error: error.message }
 
   if (data.user) {
+    let newProfileId: string | null = null
     try {
-      await createProfile({ userId: data.user.id, businessName, contactName, phone, email })
+      const newProfile = await createProfile({ userId: data.user.id, businessName, contactName, phone, email })
+      newProfileId = newProfile.id
     } catch (profileErr: unknown) {
       const msg = profileErr instanceof Error ? profileErr.message : String(profileErr)
       // Unique constraint violation — profile already exists, fine to continue
       if (!msg.toLowerCase().includes('unique') && !msg.toLowerCase().includes('duplicate')) {
         return { error: 'Account created but profile setup failed. Please contact support.' }
+      }
+    }
+
+    if (newProfileId) {
+      const referralCode = (formData.get('referralCode') as string | null)?.trim() ?? ''
+      if (referralCode) {
+        try {
+          await creditReferral(referralCode, newProfileId)
+        } catch {
+          // Never block signup on referral failure
+        }
       }
     }
   }
