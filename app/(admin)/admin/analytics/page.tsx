@@ -1,111 +1,39 @@
-'use client'
-
-import { getAnalyticsSummary } from '@/lib/mock/analytics'
-import { orders, customers, products } from '@/lib/mock/data'
+import { requireAdmin } from '@/lib/auth'
+import {
+  getAnalyticsSummary,
+  getBestSellers,
+  getRepeatCustomerPct,
+  getAtRiskCustomers,
+} from '@/lib/db/analytics'
 import { StatCard } from '@/components/admin/StatCard'
 import { DataTable, type Column } from '@/components/admin/DataTable'
 import { RevenueChart } from '@/components/admin/RevenueChart'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatINR } from '@/lib/utils'
 import { BarChart3, Package, UserPlus, Users } from 'lucide-react'
+import type { BestSeller, AtRiskCustomer } from '@/lib/db/analytics'
 
-// ── Best-Selling Products ────────────────────────────────────────────────────
-// Aggregate qty sold per productId across all orders.items, join to product name,
-// sort descending, return top 5.
-interface BestSeller extends Record<string, unknown> {
-  rank: number
-  product: string
-  unitsSold: number
-}
-
-function getBestSellers(): BestSeller[] {
-  const qtyMap: Record<string, number> = {}
-  for (const order of orders) {
-    for (const item of order.items) {
-      qtyMap[item.productId] = (qtyMap[item.productId] ?? 0) + item.qty
-    }
-  }
-  const productNameMap = Object.fromEntries(products.map(p => [p.id, p.name]))
-  return Object.entries(qtyMap)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
-    .map(([productId, unitsSold], i) => ({
-      rank: i + 1,
-      product: productNameMap[productId] ?? productId,
-      unitsSold,
-    }))
-}
-
-// ── Repeat Customers ─────────────────────────────────────────────────────────
-// Count of orders per customerId; customers with >1 order are "repeat".
-function getRepeatCustomerPct(): string {
-  const orderCountByCustomer: Record<string, number> = {}
-  for (const order of orders) {
-    orderCountByCustomer[order.customerId] = (orderCountByCustomer[order.customerId] ?? 0) + 1
-  }
-  const total = customers.length
-  if (total === 0) return '0%'
-  const repeat = customers.filter(c => (orderCountByCustomer[c.id] ?? 0) > 1).length
-  return `${Math.round((repeat / total) * 100)}%`
-}
-
-// ── At-Risk Customers ─────────────────────────────────────────────────────────
-// Heuristic: customers with 0 orders OR whose most recent order is the oldest.
-// In Phase 2 this will flag customers with no order in the last 60+ days.
-interface AtRiskRow extends Record<string, unknown> {
-  customer: string
-  lastOrder: string
-  heuristic: string
-}
-
-function getAtRiskCustomers(): AtRiskRow[] {
-  // Build map of customerId → most recent order date
-  const lastOrderMap: Record<string, string> = {}
-  for (const order of orders) {
-    const prev = lastOrderMap[order.customerId]
-    if (!prev || order.createdAt > prev) {
-      lastOrderMap[order.customerId] = order.createdAt
-    }
-  }
-
-  return customers
-    .map(c => ({
-      id: c.id,
-      businessName: c.businessName,
-      lastOrder: lastOrderMap[c.id] ?? null,
-    }))
-    .sort((a, b) => {
-      // No orders first, then by oldest order date
-      if (!a.lastOrder && !b.lastOrder) return 0
-      if (!a.lastOrder) return -1
-      if (!b.lastOrder) return 1
-      return a.lastOrder < b.lastOrder ? -1 : 1
-    })
-    .slice(0, 3)
-    .map(c => ({
-      customer: c.businessName,
-      lastOrder: c.lastOrder ?? 'No orders',
-      heuristic: c.lastOrder ? 'Oldest last order (Phase 2: flags 60+ day inactivity)' : 'No orders placed',
-    }))
-}
-
-const bestSellerColumns: Column<BestSeller>[] = [
+const bestSellerColumns: Column<BestSeller & Record<string, unknown>>[] = [
   { key: 'rank', header: '#' },
   { key: 'product', header: 'Product' },
   { key: 'unitsSold', header: 'Units Sold' },
 ]
 
-const atRiskColumns: Column<AtRiskRow>[] = [
+const atRiskColumns: Column<AtRiskCustomer & Record<string, unknown>>[] = [
   { key: 'customer', header: 'Customer' },
   { key: 'lastOrder', header: 'Last Order' },
-  { key: 'heuristic', header: 'Note' },
+  { key: 'note', header: 'Note' },
 ]
 
-export default function AnalyticsPage() {
-  const summary = getAnalyticsSummary()
-  const bestSellers = getBestSellers()
-  const repeatPct = getRepeatCustomerPct()
-  const atRisk = getAtRiskCustomers()
+export default async function AnalyticsPage() {
+  await requireAdmin()
+
+  const [summary, bestSellers, repeatPct, atRisk] = await Promise.all([
+    getAnalyticsSummary(),
+    getBestSellers(),
+    getRepeatCustomerPct(),
+    getAtRiskCustomers(),
+  ])
 
   return (
     <div className="space-y-8">
@@ -154,7 +82,10 @@ export default function AnalyticsPage() {
           </p>
         </CardHeader>
         <CardContent>
-          <DataTable columns={bestSellerColumns} data={bestSellers} />
+          <DataTable
+            columns={bestSellerColumns}
+            data={bestSellers.map((b) => ({ ...b } as BestSeller & Record<string, unknown>))}
+          />
         </CardContent>
       </Card>
 
@@ -176,11 +107,14 @@ export default function AnalyticsPage() {
         <CardHeader>
           <CardTitle>At-Risk Customers</CardTitle>
           <p className="text-sm text-muted-foreground mt-1">
-            Customers with no orders or the oldest last-order date. Phase 2 will flag customers with no order in 60+ days.
+            Customers with no order in the last 60 days, or no orders placed.
           </p>
         </CardHeader>
         <CardContent>
-          <DataTable columns={atRiskColumns} data={atRisk} />
+          <DataTable
+            columns={atRiskColumns}
+            data={atRisk.map((r) => ({ ...r } as AtRiskCustomer & Record<string, unknown>))}
+          />
         </CardContent>
       </Card>
     </div>

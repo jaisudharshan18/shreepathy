@@ -1,15 +1,24 @@
 import Link from 'next/link'
 import { BarChart3, Package, UserPlus } from 'lucide-react'
-import { getAnalyticsSummary } from '@/lib/mock/analytics'
-import { getLeads, getEnquiries } from '@/lib/mock/crm'
+import { requireAdmin } from '@/lib/auth'
+import { getAnalyticsSummary } from '@/lib/db/analytics'
+import { getLeads } from '@/lib/db/crm'
+import { getEnquiries } from '@/lib/db/crm'
 import { StatCard } from '@/components/admin/StatCard'
 import { formatINR } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 
-export default function AdminDashboardPage() {
-  const summary = getAnalyticsSummary()
-  const recentLeads = getLeads().slice(0, 5)
-  const recentEnquiries = getEnquiries().slice(0, 5)
+export default async function AdminDashboardPage() {
+  await requireAdmin()
+
+  const [summary, allLeads, allEnquiries] = await Promise.all([
+    getAnalyticsSummary(),
+    getLeads(),
+    getEnquiries(),
+  ])
+
+  const recentLeads = allLeads.slice(0, 5)
+  const recentEnquiries = allEnquiries.slice(0, 5)
 
   return (
     <div className="flex flex-col gap-8">
@@ -82,6 +91,9 @@ export default function AdminDashboardPage() {
                 </Badge>
               </li>
             ))}
+            {recentLeads.length === 0 && (
+              <li className="text-sm text-muted-foreground">No leads yet.</li>
+            )}
           </ul>
         </section>
 
@@ -109,6 +121,9 @@ export default function AdminDashboardPage() {
                 </Badge>
               </li>
             ))}
+            {recentEnquiries.length === 0 && (
+              <li className="text-sm text-muted-foreground">No enquiries yet.</li>
+            )}
           </ul>
         </section>
       </div>
