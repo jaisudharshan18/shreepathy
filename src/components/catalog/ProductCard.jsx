@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { whatsappLink, formatINR } from "@/lib/utils";
+import { whatsappLink, formatINR, assetUrl } from "@/lib/utils";
 function StockBadge({ status }) {
   if (status === "in_stock") {
     return <Badge className="bg-green-100 text-green-800 border-green-200">
@@ -27,7 +27,7 @@ export function ProductCard({ product }) {
     className="flex flex-col flex-1 group"
     aria-label={`View ${product.name}`}
   ><div className="overflow-hidden"><img
-    src={product.images[0] ?? "/images/placeholder.png"}
+    src={assetUrl(product.images[0] ?? "/images/placeholder.png")}
     alt={product.name}
     className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
   /></div><CardContent className="flex flex-col gap-2 py-3 flex-1"><div className="flex items-start justify-between gap-2"><h3 className="font-semibold text-sm leading-snug text-foreground line-clamp-2">{product.name}</h3><StockBadge status={product.stockStatus} /></div>{product.brand && <p className="text-xs text-muted-foreground">{product.brand.name}</p>}{minPrice !== null && <p className="text-sm font-medium text-brand-navy">

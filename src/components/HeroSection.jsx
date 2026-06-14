@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Sparkles, ShieldCheck } from 'lucide-react';
-import { whatsappLink } from '@/lib/utils';
+import { whatsappLink, assetUrl } from '@/lib/utils';
 
 const HERO_WA_MESSAGE = "Hi Shreepathy & Co, I'd like to place a premium wholesale bakery order.";
 
@@ -103,7 +103,7 @@ export function HeroSection() {
             {/* Curved, rounded main image container */}
             <div className="relative w-full max-w-[480px] aspect-[4/5] rounded-[50px] overflow-hidden shadow-2xl border-4 border-white bg-bakery-beige/20 transform hover:scale-[1.01] transition-transform duration-500">
               <img
-                src="/images/artisan_bakery_hero.png"
+                src={assetUrl("/images/artisan_bakery_hero.png")}
                 alt="Premium Artisan Breads and Pastries"
                 className="w-full h-full object-cover"
               />

@@ -13,3 +13,8 @@ export function formatINR(n) {
 export function slugify(s) {
   return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
+// Prepends Vite's base URL so assets resolve correctly on GitHub Pages (/shreepathy/)
+export function assetUrl(path) {
+  const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+  return `${base}${path}`;
+}
