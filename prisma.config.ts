@@ -10,8 +10,9 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    // DATABASE_URL is the pooler URL (pgbouncer :6543)
-    // DIRECT_URL (:5432) is used by migrate/push — passed separately via env at migration time
-    url: process.env["DATABASE_URL"]!,
+    // Use the session pooler (:5432, DIRECT_URL) for the CLI: prisma migrate/push need a
+    // direct/session connection — the transaction pooler (:6543, pgbouncer) can't run migrations.
+    // At this project's scale the session pooler is fine for runtime too (see lib/db/client.ts).
+    url: process.env["DIRECT_URL"]!,
   },
 });
