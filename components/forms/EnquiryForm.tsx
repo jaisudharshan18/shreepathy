@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, type FormEvent } from 'react'
+import { useState, useTransition, type FormEvent } from 'react'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { whatsappLink } from '@/lib/utils'
+import { submitEnquiryAction } from '@/app/(marketing)/contact/actions'
 
 interface FormFields {
   name: string
@@ -37,6 +38,8 @@ export function EnquiryForm() {
   const [fields, setFields] = useState<FormFields>(EMPTY)
   const [errors, setErrors] = useState<FormErrors>({})
   const [submitted, setSubmitted] = useState(false)
+  const [serverError, setServerError] = useState<string | null>(null)
+  const [isPending, startTransition] = useTransition()
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -47,6 +50,7 @@ export function EnquiryForm() {
     if (name in errors) {
       setErrors((prev) => ({ ...prev, [name]: undefined }))
     }
+    if (serverError) setServerError(null)
   }
 
   function validate(): FormErrors {
@@ -65,17 +69,25 @@ export function EnquiryForm() {
       setErrors(errs)
       return
     }
-    const payload = {
-      name: fields.name.trim(),
-      phone: fields.phone.trim(),
-      business: fields.business.trim() || undefined,
-      products: fields.products.trim(),
-      quantity: fields.quantity.trim() || undefined,
-      location: fields.location.trim() || undefined,
-      message: fields.message.trim() || undefined,
-    }
-    console.log('Enquiry payload:', payload)
-    setSubmitted(true)
+
+    const fd = new FormData()
+    fd.set('name', fields.name.trim())
+    fd.set('phone', fields.phone.trim())
+    fd.set('business', fields.business.trim())
+    fd.set('products', fields.products.trim())
+    fd.set('quantity', fields.quantity.trim())
+    fd.set('location', fields.location.trim())
+    fd.set('message', fields.message.trim())
+
+    startTransition(async () => {
+      const r = await submitEnquiryAction(fd)
+      if (r.ok) {
+        setSubmitted(true)
+        setFields(EMPTY)
+      } else if (r.error) {
+        setServerError(r.error)
+      }
+    })
   }
 
   function buildWhatsAppMessage(): string {
@@ -211,10 +223,15 @@ export function EnquiryForm() {
         />
       </div>
 
+      {/* Server error */}
+      {serverError && (
+        <p className="text-sm text-red-600">{serverError}</p>
+      )}
+
       {/* Actions */}
       <div className="flex flex-col sm:flex-row gap-3 pt-2">
-        <Button type="submit" className="flex-1">
-          Send Enquiry
+        <Button type="submit" className="flex-1" disabled={isPending}>
+          {isPending ? 'Sending…' : 'Send Enquiry'}
         </Button>
         <a
           href={whatsappLink(buildWhatsAppMessage())}

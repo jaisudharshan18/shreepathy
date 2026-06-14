@@ -61,10 +61,38 @@ export async function deleteLead(id: string) {
 
 // ── Enquiry write repo ────────────────────────────────────────────────────────
 
+export interface EnquiryCreateData {
+  name: string
+  phone: string
+  business?: string
+  products: string
+  quantity?: string
+  location?: string
+  message?: string
+}
+
+export async function createEnquiry(data: EnquiryCreateData) {
+  return prisma.enquiry.create({ data })
+}
+
 export async function setEnquiryHandled(id: string, handled: boolean) {
   return prisma.enquiry.update({ where: { id }, data: { handled } })
 }
 
 export async function deleteEnquiry(id: string) {
   return prisma.enquiry.delete({ where: { id } })
+}
+
+// ── Lead create repo ──────────────────────────────────────────────────────────
+
+export interface LeadCreateData {
+  source: string
+  name: string
+  phone: string
+  businessName?: string
+  notes?: string
+}
+
+export async function createLead(data: LeadCreateData) {
+  return prisma.lead.create({ data: { ...data, status: 'New' } })
 }
