@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { requireAdmin } from '@/lib/auth'
 import { prisma } from '@/lib/db/client'
+import { runBirthdayOffers } from '@/lib/db/account'
 
 type ActionResult = { ok: true } | { error: string }
 
@@ -33,6 +34,17 @@ export async function adjustPointsAction(formData: FormData): Promise<ActionResu
     revalidatePath('/admin/loyalty')
     revalidatePath('/admin/customers')
     return { ok: true }
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'Unknown error' }
+  }
+}
+
+export async function runBirthdayOffersAction(): Promise<{ ok: true; count: number } | { error: string }> {
+  try {
+    await requireAdmin()
+    const results = await runBirthdayOffers(new Date())
+    revalidatePath('/admin/loyalty')
+    return { ok: true, count: results.length }
   } catch (err) {
     return { error: err instanceof Error ? err.message : 'Unknown error' }
   }

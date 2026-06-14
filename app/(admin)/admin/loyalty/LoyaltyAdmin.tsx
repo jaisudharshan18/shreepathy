@@ -14,7 +14,7 @@ import {
 import { formatINR } from '@/lib/utils'
 import { pointsForOrder } from '@/lib/loyalty'
 import type { CustomerProfile } from '@/lib/generated/prisma/client'
-import { adjustPointsAction } from './actions'
+import { adjustPointsAction, runBirthdayOffersAction } from './actions'
 
 interface Props {
   customers: CustomerProfile[]
@@ -25,6 +25,21 @@ export default function LoyaltyAdmin({ customers }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [confirm, setConfirm] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+
+  const [birthdayMsg, setBirthdayMsg] = useState<string | null>(null)
+  const [birthdayPending, startBirthdayTransition] = useTransition()
+
+  function handleRunBirthday() {
+    setBirthdayMsg(null)
+    startBirthdayTransition(async () => {
+      const result = await runBirthdayOffersAction()
+      if ('error' in result) {
+        setBirthdayMsg(`Error: ${result.error}`)
+      } else {
+        setBirthdayMsg(`Sent ${result.count} birthday offer${result.count === 1 ? '' : 's'}.`)
+      }
+    })
+  }
 
   function handleAdjust(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -162,15 +177,28 @@ export default function LoyaltyAdmin({ customers }: Props) {
         </form>
       </section>
 
-      {/* Referrals — Phase 2d */}
+      {/* Birthday Offers */}
       <section className="rounded-xl border bg-card p-4 space-y-3">
-        <h2 className="font-medium">
-          Referrals{' '}
-          <span className="text-muted-foreground font-normal text-sm">(Phase 2d referrals)</span>
-        </h2>
+        <h2 className="font-medium">Birthday Offers</h2>
         <p className="text-sm text-muted-foreground">
-          Referral tracking and rewards will be wired in Phase 2d.
+          Send discount codes to customers whose birthday is today. Records a loyalty entry per customer and emails the code (no-op if RESEND_API_KEY is not set).
         </p>
+
+        {birthdayMsg && (
+          <p className="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">
+            {birthdayMsg}
+          </p>
+        )}
+
+        <Button
+          type="button"
+          onClick={handleRunBirthday}
+          disabled={birthdayPending}
+          variant="outline"
+          className="w-fit"
+        >
+          {birthdayPending ? 'Running…' : 'Run birthday offers now'}
+        </Button>
       </section>
     </div>
   )
