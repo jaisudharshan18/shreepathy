@@ -1,6 +1,7 @@
-import { getCustomers } from '@/lib/db/crm'
-import { getOrders } from '@/lib/db/account'
+import { requireUser } from '@/lib/auth'
+import { getProfileByUserId, getOrders } from '@/lib/db/account'
 import { whatsappLink, formatINR } from '@/lib/utils'
+import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 import { Badge } from '@/components/ui/badge'
@@ -17,8 +18,30 @@ const TIER_THRESHOLDS: Record<Tier, { min: number; next: number | null; nextLabe
 }
 
 export default async function RewardsPage() {
-  const customers = await getCustomers()
-  const me = customers[0]
+  const user = await requireUser()
+  const me = await getProfileByUserId(user.id)
+
+  if (!me) {
+    return (
+      <div className="flex flex-col gap-6">
+        <h1 className="text-2xl font-bold text-brand-navy">Rewards &amp; Loyalty</h1>
+        <Card>
+          <CardContent className="py-8 text-center flex flex-col gap-4 items-center">
+            <p className="text-muted-foreground">
+              Your profile hasn&apos;t been set up yet. Please set up your profile to view your rewards.
+            </p>
+            <Link
+              href="/contact"
+              className="inline-flex items-center rounded-full bg-brand-magenta px-5 py-2 text-sm font-semibold text-white shadow hover:opacity-90 transition-opacity"
+            >
+              Contact Us to Set Up Profile
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   const orders = await getOrders(me.id)
 
   const cumulativeSpend = orders.reduce((sum, o) => sum + o.totalValue, 0)

@@ -1,81 +1,54 @@
 'use client'
 
-import { useState } from 'react'
+import { useActionState } from 'react'
+import { useFormStatus } from 'react-dom'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { signUpAction, type AuthState } from '@/app/(account)/actions'
 
-interface FormFields {
-  businessName: string
-  contactName: string
-  phone: string
-  email: string
-  password: string
-}
-
-type FormErrors = Partial<Record<keyof FormFields, string>>
-
-const INITIAL: FormFields = {
-  businessName: '',
-  contactName: '',
-  phone: '',
-  email: '',
-  password: '',
+function SubmitButton() {
+  const { pending } = useFormStatus()
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="mt-2 rounded-full bg-brand-magenta px-6 py-2.5 text-sm font-semibold text-white shadow hover:opacity-90 transition-opacity disabled:opacity-60"
+    >
+      {pending ? 'Creating account…' : 'Create Account'}
+    </button>
+  )
 }
 
 export function RegisterForm() {
-  const router = useRouter()
-  const [fields, setFields] = useState<FormFields>(INITIAL)
-  const [errors, setErrors] = useState<FormErrors>({})
-
-  function set(key: keyof FormFields) {
-    return (e: React.ChangeEvent<HTMLInputElement>) =>
-      setFields((prev) => ({ ...prev, [key]: e.target.value }))
-  }
-
-  function validate(): boolean {
-    const next: FormErrors = {}
-    if (!fields.businessName.trim()) next.businessName = 'Business name is required'
-    if (!fields.contactName.trim()) next.contactName = 'Contact name is required'
-    if (!fields.phone.trim()) next.phone = 'Phone is required'
-    if (!fields.email.trim()) next.email = 'Email is required'
-    if (!fields.password.trim()) next.password = 'Password is required'
-    setErrors(next)
-    return Object.keys(next).length === 0
-  }
-
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    if (!validate()) return
-    console.log('Mock register:', {
-      businessName: fields.businessName,
-      contactName: fields.contactName,
-      phone: fields.phone,
-      email: fields.email,
-    })
-    router.push('/account')
-  }
+  const [state, formAction] = useActionState<AuthState, FormData>(signUpAction, {})
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
+    <form action={formAction} noValidate className="flex flex-col gap-4">
+      {/* Server-side error */}
+      {state.error && (
+        <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive" role="alert">
+          {state.error}
+        </p>
+      )}
+
+      {/* Success message (email confirmation required) */}
+      {state.message && (
+        <p className="rounded-md bg-green-50 px-3 py-2 text-sm text-green-700 border border-green-200" role="status">
+          {state.message}
+        </p>
+      )}
+
       {/* Business Name */}
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="businessName">Business Name</Label>
         <Input
           id="businessName"
+          name="businessName"
           type="text"
-          value={fields.businessName}
-          onChange={set('businessName')}
-          aria-invalid={!!errors.businessName}
-          aria-describedby={errors.businessName ? 'businessName-error' : undefined}
+          required
           placeholder="Your bakery or restaurant name"
         />
-        {errors.businessName && (
-          <p id="businessName-error" className="text-xs text-destructive" role="alert">
-            {errors.businessName}
-          </p>
-        )}
       </div>
 
       {/* Contact Name */}
@@ -83,19 +56,12 @@ export function RegisterForm() {
         <Label htmlFor="contactName">Contact Name</Label>
         <Input
           id="contactName"
+          name="contactName"
           type="text"
           autoComplete="name"
-          value={fields.contactName}
-          onChange={set('contactName')}
-          aria-invalid={!!errors.contactName}
-          aria-describedby={errors.contactName ? 'contactName-error' : undefined}
+          required
           placeholder="Your full name"
         />
-        {errors.contactName && (
-          <p id="contactName-error" className="text-xs text-destructive" role="alert">
-            {errors.contactName}
-          </p>
-        )}
       </div>
 
       {/* Phone */}
@@ -103,19 +69,12 @@ export function RegisterForm() {
         <Label htmlFor="phone">Phone</Label>
         <Input
           id="phone"
+          name="phone"
           type="tel"
           autoComplete="tel"
-          value={fields.phone}
-          onChange={set('phone')}
-          aria-invalid={!!errors.phone}
-          aria-describedby={errors.phone ? 'phone-error' : undefined}
+          required
           placeholder="10-digit mobile number"
         />
-        {errors.phone && (
-          <p id="phone-error" className="text-xs text-destructive" role="alert">
-            {errors.phone}
-          </p>
-        )}
       </div>
 
       {/* Email */}
@@ -123,19 +82,12 @@ export function RegisterForm() {
         <Label htmlFor="email">Email</Label>
         <Input
           id="email"
+          name="email"
           type="email"
           autoComplete="email"
-          value={fields.email}
-          onChange={set('email')}
-          aria-invalid={!!errors.email}
-          aria-describedby={errors.email ? 'email-error' : undefined}
+          required
           placeholder="you@example.com"
         />
-        {errors.email && (
-          <p id="email-error" className="text-xs text-destructive" role="alert">
-            {errors.email}
-          </p>
-        )}
       </div>
 
       {/* Password */}
@@ -143,27 +95,15 @@ export function RegisterForm() {
         <Label htmlFor="password">Password</Label>
         <Input
           id="password"
+          name="password"
           type="password"
           autoComplete="new-password"
-          value={fields.password}
-          onChange={set('password')}
-          aria-invalid={!!errors.password}
-          aria-describedby={errors.password ? 'password-error' : undefined}
+          required
           placeholder="Choose a password"
         />
-        {errors.password && (
-          <p id="password-error" className="text-xs text-destructive" role="alert">
-            {errors.password}
-          </p>
-        )}
       </div>
 
-      <button
-        type="submit"
-        className="mt-2 rounded-full bg-brand-magenta px-6 py-2.5 text-sm font-semibold text-white shadow hover:opacity-90 transition-opacity"
-      >
-        Create Account
-      </button>
+      <SubmitButton />
 
       <p className="text-center text-sm text-muted-foreground">
         Already have an account?{' '}

@@ -1,5 +1,6 @@
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
+import { AuthNav } from '@/components/layout/AuthNav'
 
 export default function ShopLayout({
   children,
@@ -8,7 +9,7 @@ export default function ShopLayout({
 }) {
   return (
     <>
-      <Header />
+      <Header authSlot={<AuthNav />} />
       <main className="min-h-screen">{children}</main>
       <Footer />
     </>

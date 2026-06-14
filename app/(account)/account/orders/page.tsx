@@ -1,6 +1,7 @@
-import { getCustomers } from '@/lib/db/crm'
-import { getOrders } from '@/lib/db/account'
+import { requireUser } from '@/lib/auth'
+import { getProfileByUserId, getOrders } from '@/lib/db/account'
 import { formatINR } from '@/lib/utils'
+import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 import {
@@ -12,6 +13,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
+import { Card, CardContent } from '@/components/ui/card'
 
 export const metadata = { title: 'My Orders — Shreepathy & Co' }
 
@@ -23,8 +25,30 @@ const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'outline' | 'dest
 }
 
 export default async function OrdersPage() {
-  const customers = await getCustomers()
-  const me = customers[0]
+  const user = await requireUser()
+  const me = await getProfileByUserId(user.id)
+
+  if (!me) {
+    return (
+      <div className="flex flex-col gap-6">
+        <h1 className="text-2xl font-bold text-brand-navy">My Orders</h1>
+        <Card>
+          <CardContent className="py-8 text-center flex flex-col gap-4 items-center">
+            <p className="text-muted-foreground">
+              Your profile hasn&apos;t been set up yet. Please set up your profile before viewing orders.
+            </p>
+            <Link
+              href="/contact"
+              className="inline-flex items-center rounded-full bg-brand-magenta px-5 py-2 text-sm font-semibold text-white shadow hover:opacity-90 transition-opacity"
+            >
+              Contact Us to Set Up Profile
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   const orders = await getOrders(me.id)
 
   return (

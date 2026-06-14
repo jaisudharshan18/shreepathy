@@ -1,6 +1,8 @@
-import { getCustomers } from '@/lib/db/crm'
+import { requireUser } from '@/lib/auth'
+import { getProfileByUserId } from '@/lib/db/account'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'My Profile — Shreepathy & Co' }
@@ -12,8 +14,30 @@ const TIER_VARIANT: Record<string, 'default' | 'secondary' | 'outline'> = {
 }
 
 export default async function ProfilePage() {
-  const customers = await getCustomers()
-  const me = customers[0]
+  const user = await requireUser()
+  const me = await getProfileByUserId(user.id)
+
+  if (!me) {
+    return (
+      <div className="flex flex-col gap-6">
+        <h1 className="text-2xl font-bold text-brand-navy">My Profile</h1>
+        <Card>
+          <CardContent className="py-8 text-center flex flex-col gap-4 items-center">
+            <p className="text-muted-foreground">
+              Your profile hasn&apos;t been set up yet. This can happen if you registered before
+              our profile system was introduced.
+            </p>
+            <Link
+              href="/contact"
+              className="inline-flex items-center rounded-full bg-brand-magenta px-5 py-2 text-sm font-semibold text-white shadow hover:opacity-90 transition-opacity"
+            >
+              Contact Us to Set Up Profile
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col gap-6">

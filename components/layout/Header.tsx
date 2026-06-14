@@ -22,7 +22,11 @@ const navLinks = [
 
 const WA_MESSAGE = 'Hi Shreepathy & Co, I would like to enquire about your products.'
 
-export function Header() {
+interface HeaderProps {
+  authSlot?: React.ReactNode
+}
+
+export function Header({ authSlot }: HeaderProps) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -49,8 +53,15 @@ export function Header() {
           ))}
         </nav>
 
-        {/* Desktop CTA + Mobile hamburger */}
+        {/* Desktop CTA + Auth slot + Mobile hamburger */}
         <div className="flex items-center gap-3">
+          {/* Auth-aware links (Login / Account + Logout) */}
+          {authSlot && (
+            <div className="hidden md:flex items-center gap-3">
+              {authSlot}
+            </div>
+          )}
+
           <a
             href={whatsappLink(WA_MESSAGE)}
             target="_blank"
