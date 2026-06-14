@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/db/client'
-import { Prisma } from '@/lib/generated/prisma/client'
+import { Prisma, StockStatus } from '@/lib/generated/prisma/client'
 
 // ── Shared include shape ─────────────────────────────────────────────────────
 
@@ -83,4 +83,57 @@ export async function getCategory(slug: string) {
 
 export async function getCategoryById(id: string) {
   return prisma.category.findUnique({ where: { id } })
+}
+
+// ── Product write repo ────────────────────────────────────────────────────────
+
+export interface ProductVariantInput {
+  size: string
+  price?: number | null
+  image?: string | null
+}
+
+export interface ProductWriteData {
+  name: string
+  slug: string
+  brandId: string
+  categoryId: string
+  description: string
+  images: string[]
+  modelGlb?: string | null
+  stockStatus: StockStatus
+  isFeatured: boolean
+  variants: ProductVariantInput[]
+}
+
+export async function createProduct(data: ProductWriteData) {
+  const { variants, ...fields } = data
+  return prisma.product.create({
+    data: {
+      ...fields,
+      variants: {
+        create: variants,
+      },
+    },
+    include: productInclude,
+  })
+}
+
+export async function updateProduct(id: string, data: ProductWriteData) {
+  const { variants, ...fields } = data
+  return prisma.product.update({
+    where: { id },
+    data: {
+      ...fields,
+      variants: {
+        deleteMany: {},
+        create: variants,
+      },
+    },
+    include: productInclude,
+  })
+}
+
+export async function deleteProduct(id: string) {
+  return prisma.product.delete({ where: { id } })
 }
