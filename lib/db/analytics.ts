@@ -25,18 +25,36 @@ export async function getAnalyticsSummary(): Promise<AnalyticsSummary> {
 
   const revenue = revenueAgg._sum.totalValue ?? 0
 
-  const monthMap = new Map<string, number>()
+  // Build real revenue-by-month for the last 6 months (ending this month)
+  const SHORT_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const now = new Date()
+  const currentYear = now.getFullYear()
+  const currentMonth = now.getMonth() // 0-indexed
+
+  // Build a map keyed by "YYYY-MM" → total revenue
+  const keyMap = new Map<string, number>()
   for (const ord of orders) {
-    const label = ord.createdAt.toLocaleString('en-US', {
-      month: 'short',
-      year: 'numeric',
-    })
-    monthMap.set(label, (monthMap.get(label) ?? 0) + ord.totalValue)
+    const y = ord.createdAt.getFullYear()
+    const m = ord.createdAt.getMonth()
+    const key = `${y}-${String(m).padStart(2, '0')}`
+    keyMap.set(key, (keyMap.get(key) ?? 0) + ord.totalValue)
   }
 
-  const revenueByMonth: RevenueByMonth[] = Array.from(monthMap.entries())
-    .sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime())
-    .map(([month, rev]) => ({ month, revenue: rev }))
+  // Generate last 6 months in chronological order
+  const revenueByMonth: RevenueByMonth[] = []
+  for (let i = 5; i >= 0; i--) {
+    let m = currentMonth - i
+    let y = currentYear
+    if (m < 0) {
+      m += 12
+      y -= 1
+    }
+    const key = `${y}-${String(m).padStart(2, '0')}`
+    revenueByMonth.push({
+      month: SHORT_MONTHS[m],
+      revenue: keyMap.get(key) ?? 0,
+    })
+  }
 
   return { revenue, customerCount, leadCount, orderCount, revenueByMonth }
 }
