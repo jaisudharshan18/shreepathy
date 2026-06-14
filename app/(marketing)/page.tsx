@@ -1,14 +1,17 @@
 import Link from 'next/link'
-import { getProducts, getBrands, getCategories } from '@/lib/mock/catalog'
+import { getProducts, getBrands, getCategories } from '@/lib/db/catalog'
 import { whatsappLink } from '@/lib/utils'
 import { ProductGrid } from '@/components/catalog/ProductGrid'
 
 const HERO_WA_MESSAGE = "Hi Shreepathy & Co, I'd like to place a wholesale order."
 
-export default function HomePage() {
-  const featuredProducts = getProducts().filter((p) => p.isFeatured)
-  const categories = getCategories()
-  const brands = getBrands()
+export default async function HomePage() {
+  const [allProducts, categories, brands] = await Promise.all([
+    getProducts(),
+    getCategories(),
+    getBrands(),
+  ])
+  const featuredProducts = allProducts.filter((p) => p.isFeatured)
 
   return (
     <div className="flex flex-col">

@@ -1,15 +1,14 @@
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
-import { getBrandById } from '@/lib/mock/catalog'
 import { whatsappLink, formatINR } from '@/lib/utils'
-import type { Product } from '@/lib/types'
+import type { ProductWithRelations } from '@/lib/db/catalog'
 
 interface ProductCardProps {
-  product: Product
+  product: ProductWithRelations
 }
 
-function StockBadge({ status }: { status: Product['stockStatus'] }) {
+function StockBadge({ status }: { status: ProductWithRelations['stockStatus'] }) {
   if (status === 'in_stock') {
     return (
       <Badge className="bg-green-100 text-green-800 border-green-200">
@@ -32,8 +31,7 @@ function StockBadge({ status }: { status: Product['stockStatus'] }) {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const brand = getBrandById(product.brandId)
-  const prices = product.variants.map((v) => v.price).filter((p): p is number => p !== undefined)
+  const prices = product.variants.map((v) => v.price).filter((p): p is number => p !== undefined && p !== null)
   const minPrice = prices.length > 0 ? Math.min(...prices) : null
 
   const waMessage = `Hi, I'm interested in ${product.name}.`
@@ -61,8 +59,8 @@ export function ProductCard({ product }: ProductCardProps) {
               </h3>
               <StockBadge status={product.stockStatus} />
             </div>
-            {brand && (
-              <p className="text-xs text-muted-foreground">{brand.name}</p>
+            {product.brand && (
+              <p className="text-xs text-muted-foreground">{product.brand.name}</p>
             )}
             {minPrice !== null && (
               <p className="text-sm font-medium text-brand-navy">

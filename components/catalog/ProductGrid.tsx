@@ -1,8 +1,8 @@
 import { ProductCard } from './ProductCard'
-import type { Product } from '@/lib/types'
+import type { ProductWithRelations } from '@/lib/db/catalog'
 
 interface ProductGridProps {
-  products: Product[]
+  products: ProductWithRelations[]
 }
 
 export function ProductGrid({ products }: ProductGridProps) {

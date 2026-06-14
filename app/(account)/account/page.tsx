@@ -1,7 +1,8 @@
-import { customers } from '@/lib/mock/data'
+import { getCustomers } from '@/lib/db/crm'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
+export const dynamic = 'force-dynamic'
 export const metadata = { title: 'My Profile — Shreepathy & Co' }
 
 const TIER_VARIANT: Record<string, 'default' | 'secondary' | 'outline'> = {
@@ -10,7 +11,8 @@ const TIER_VARIANT: Record<string, 'default' | 'secondary' | 'outline'> = {
   Platinum: 'outline',
 }
 
-export default function ProfilePage() {
+export default async function ProfilePage() {
+  const customers = await getCustomers()
   const me = customers[0]
 
   return (

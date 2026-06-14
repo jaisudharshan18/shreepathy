@@ -1,6 +1,8 @@
-import { customers } from '@/lib/mock/data'
-import { getOrders } from '@/lib/mock/account'
+import { getCustomers } from '@/lib/db/crm'
+import { getOrders } from '@/lib/db/account'
 import { whatsappLink, formatINR } from '@/lib/utils'
+
+export const dynamic = 'force-dynamic'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { Tier } from '@/lib/types'
@@ -14,13 +16,14 @@ const TIER_THRESHOLDS: Record<Tier, { min: number; next: number | null; nextLabe
   Platinum: { min: 200_000, next: null, nextLabel: null },
 }
 
-export default function RewardsPage() {
+export default async function RewardsPage() {
+  const customers = await getCustomers()
   const me = customers[0]
-  const orders = getOrders(me.id)
+  const orders = await getOrders(me.id)
 
   const cumulativeSpend = orders.reduce((sum, o) => sum + o.totalValue, 0)
   // Use stored tier as the authoritative current tier for consistent display with the Profile page
-  const currentTier: Tier = me.tier
+  const currentTier: Tier = me.tier as Tier
   const thresholds = TIER_THRESHOLDS[currentTier]
 
   // Progress toward next tier

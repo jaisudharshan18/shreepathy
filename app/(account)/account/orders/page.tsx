@@ -1,6 +1,8 @@
-import { customers } from '@/lib/mock/data'
-import { getOrders } from '@/lib/mock/account'
+import { getCustomers } from '@/lib/db/crm'
+import { getOrders } from '@/lib/db/account'
 import { formatINR } from '@/lib/utils'
+
+export const dynamic = 'force-dynamic'
 import {
   Table,
   TableBody,
@@ -20,9 +22,10 @@ const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'outline' | 'dest
   Cancelled: 'destructive',
 }
 
-export default function OrdersPage() {
+export default async function OrdersPage() {
+  const customers = await getCustomers()
   const me = customers[0]
-  const orders = getOrders(me.id)
+  const orders = await getOrders(me.id)
 
   return (
     <div className="flex flex-col gap-6">
@@ -55,7 +58,9 @@ export default function OrdersPage() {
                   })}
                 </TableCell>
                 <TableCell>
-                  {order.items.length === 1
+                  {order.items.length === 0
+                    ? '—'
+                    : order.items.length === 1
                     ? order.items[0].name
                     : `${order.items[0].name} +${order.items.length - 1} more`}
                 </TableCell>

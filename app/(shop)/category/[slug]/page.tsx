@@ -1,10 +1,11 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import { filterProducts, getCategory, getCategories } from '@/lib/mock/catalog'
+import { filterProducts, getCategory, getCategories } from '@/lib/db/catalog'
 import { ProductGrid } from '@/components/catalog/ProductGrid'
 
-export function generateStaticParams() {
-  return getCategories().map((c) => ({ slug: c.slug }))
+export async function generateStaticParams() {
+  const categories = await getCategories()
+  return categories.map((c) => ({ slug: c.slug }))
 }
 
 interface Props {
@@ -13,7 +14,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const category = getCategory(slug)
+  const category = await getCategory(slug)
   if (!category) {
     return {
       title: 'Category Not Found',
@@ -32,10 +33,10 @@ export default async function CategoryPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const category = getCategory(slug)
+  const category = await getCategory(slug)
   if (!category) notFound()
 
-  const categoryProducts = filterProducts({ categoryId: category.id })
+  const categoryProducts = await filterProducts({ categoryId: category.id })
 
   return (
     <div className="container mx-auto px-4 py-10 space-y-6">

@@ -1,28 +1,24 @@
 'use client'
 
 import { useState } from 'react'
-import { getProducts } from '@/lib/mock/catalog'
-import type { ProductFilter } from '@/lib/mock/catalog'
-import type { Category, Brand } from '@/lib/types'
+import type { ProductFilter } from '@/lib/db/catalog'
 import { cn } from '@/lib/utils'
 
+// Minimal interfaces compatible with both lib/types and Prisma DB types
+interface CategoryLike { id: string; name: string }
+interface BrandLike { id: string; name: string }
+
 interface FilterSidebarProps {
-  categories: Category[]
-  brands: Brand[]
+  categories: CategoryLike[]
+  brands: BrandLike[]
+  sizes?: string[]
   onChange: (f: ProductFilter) => void
 }
 
-function getDistinctSizes(): string[] {
-  const all = getProducts().flatMap((p) => p.variants.map((v) => v.size))
-  return Array.from(new Set(all)).sort()
-}
-
-export function FilterSidebar({ categories, brands, onChange }: FilterSidebarProps) {
+export function FilterSidebar({ categories, brands, sizes = [], onChange }: FilterSidebarProps) {
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>()
   const [selectedBrand, setSelectedBrand] = useState<string | undefined>()
   const [selectedSize, setSelectedSize] = useState<string | undefined>()
-
-  const sizes = getDistinctSizes()
 
   function update(patch: Partial<{ cat: string | undefined; brand: string | undefined; size: string | undefined }>) {
     const cat = 'cat' in patch ? patch.cat : selectedCategory

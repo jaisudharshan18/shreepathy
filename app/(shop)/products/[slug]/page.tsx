@@ -1,14 +1,15 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { getProduct, filterProducts, getBrandById, getCategoryById, getProducts } from '@/lib/mock/catalog'
+import { getProduct, filterProducts, getProducts } from '@/lib/db/catalog'
 import { Badge } from '@/components/ui/badge'
 import { ProductGrid } from '@/components/catalog/ProductGrid'
 import { ProductViewer3D } from '@/components/catalog/ProductViewer3D'
 import { whatsappLink, formatINR } from '@/lib/utils'
 
-export function generateStaticParams() {
-  return getProducts().map((p) => ({ slug: p.slug }))
+export async function generateStaticParams() {
+  const products = await getProducts()
+  return products.map((p) => ({ slug: p.slug }))
 }
 
 interface Props {
@@ -17,7 +18,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const product = getProduct(slug)
+  const product = await getProduct(slug)
   if (!product) {
     return {
       title: 'Product Not Found',
@@ -46,12 +47,10 @@ export default async function ProductDetailPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const product = getProduct(slug)
+  const product = await getProduct(slug)
   if (!product) notFound()
 
-  const brand = getBrandById(product.brandId)
-  const category = getCategoryById(product.categoryId)
-  const related = filterProducts({ categoryId: product.categoryId })
+  const related = (await filterProducts({ categoryId: product.categoryId }))
     .filter((p) => p.id !== product.id)
     .slice(0, 4)
 
@@ -62,8 +61,8 @@ export default async function ProductDetailPage({
     '@type': 'Product',
     name: product.name,
     description: product.description,
-    brand: brand ? { '@type': 'Brand', name: brand.name } : undefined,
-    category: category?.name,
+    brand: product.brand ? { '@type': 'Brand', name: product.brand.name } : undefined,
+    category: product.category?.name,
   }
 
   return (
@@ -96,14 +95,14 @@ export default async function ProductDetailPage({
         <div className="space-y-5">
           <div className="space-y-2">
             <h1 className="text-2xl font-bold text-brand-navy">{product.name}</h1>
-            {brand && (
+            {product.brand && (
               <p className="text-sm text-muted-foreground">
                 by{' '}
                 <Link
-                  href={`/brands/${brand.slug}`}
+                  href={`/brands/${product.brand.slug}`}
                   className="text-brand-magenta hover:underline font-medium"
                 >
-                  {brand.name}
+                  {product.brand.name}
                 </Link>
               </p>
             )}
@@ -123,7 +122,7 @@ export default async function ProductDetailPage({
                     className="flex flex-col items-center rounded-md border border-input px-3 py-2 text-sm min-w-[72px]"
                   >
                     <span className="font-medium">{v.size}</span>
-                    {v.price !== undefined && (
+                    {v.price != null && (
                       <span className="text-xs text-muted-foreground">{formatINR(v.price)}</span>
                     )}
                   </div>

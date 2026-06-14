@@ -1,14 +1,14 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { getBrands } from '@/lib/mock/catalog'
+import { getBrands } from '@/lib/db/catalog'
 
 export const metadata: Metadata = {
   title: 'Brands | Shreepathy & Co',
   description: 'Explore the premium food ingredient brands we carry at Shreepathy & Co.',
 }
 
-export default function BrandsPage() {
-  const brands = getBrands()
+export default async function BrandsPage() {
+  const brands = await getBrands()
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-16">

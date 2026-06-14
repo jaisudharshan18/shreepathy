@@ -4,7 +4,9 @@ import { PrismaClient } from '@/lib/generated/prisma/client'
 
 function makePrisma() {
   const connectionString = process.env.DIRECT_URL!
-  const pool = new Pool({ connectionString })
+  // Limit max pool size to 1 per worker so that next build's 11 parallel workers
+  // stay well under Supabase session-mode's connection limit of 15.
+  const pool = new Pool({ connectionString, max: 1 })
   const adapter = new PrismaPg(pool)
   return new PrismaClient({ adapter })
 }
