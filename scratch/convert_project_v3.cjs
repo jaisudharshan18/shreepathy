@@ -22,7 +22,6 @@ function initDirectories() {
   fs.mkdirSync(pagesDir, { recursive: true });
 }
 
-// Strip TypeScript and convert Next.js syntax to React Router
 function transpileFile(srcPath, loader) {
   let content = fs.readFileSync(srcPath, 'utf8');
 
